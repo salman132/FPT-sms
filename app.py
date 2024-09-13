@@ -27,10 +27,10 @@ def get_access_token():
     token_time = data["created_time"]
 
     if time.time() - token_time > expires_in:
-        client_secret = "j4yC3G5MGCGC6OsB2AFe"
-        client_id = "1726087278974764839"
+        client_secret = "f96a3527059cc346B84b5b5d960cb21006b41d11587aa4edDa2Cb94142b4c2c7ea0182cc"
+        client_id = "c3FcCa19c94547ed9f6c4Ed9eF52180834bf1637"
 
-        url = "http://sandbox.sms.fpt.net/oauth2/token"
+        url = "https://api01.sms.fpt.net/oauth2/token"
         headers = {
             "Content-Type": "application/json",
         }
@@ -38,11 +38,11 @@ def get_access_token():
             "grant_type": "client_credentials",
             "client_id": client_id,
             "client_secret": client_secret,
-            "scope": "send_brandname_otp",
-            "session_id": "5c22be0c0396440829c98d7ba124092020145753419"
+            "scope": "send_brandname, send_brandname_otp",
+            "session_id": "5c22be0c0396440829c98d7ba1240920"
         }
 
-        tokens = requests.post(url, json=data, headers=headers).json()
+        tokens = requests.post(url, data=json.dumps(data), headers=headers, verify=False).json()
         print(tokens)
         access_token = tokens["access_token"]
         tokens["created_time"] = time.time()
@@ -56,7 +56,7 @@ async def handle_form(
     phone: str = Form(...), body: str = Form(...), sender: str = Form(...)
 ):
     try:
-        url = "http://sandbox.sms.fpt.net/api/push-brandname-international"
+        url = "http://app.sms.fpt.net/api/push-brandname-international"
         access_token = get_access_token()
         headers = {
             "Content-Type": "application/json",
