@@ -89,6 +89,7 @@ async def handle_form(data: DataModel):
             "Phone": data.phone.replace("+84",""),
             "Message": base64_encoded,
         }
+        print(data)
         resp = requests.post(url, json=data, headers=headers)
         resp.raise_for_status()
         return resp.json()
