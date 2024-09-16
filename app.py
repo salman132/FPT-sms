@@ -86,7 +86,7 @@ async def handle_form(data: DataModel):
             "access_token": access_token,
             "session_id": "5c22be0c0396440829c98d7ba124092020145753419",
             "BrandName": "ARROWSTER",
-            "Phone": data.phone,
+            "Phone": data.phone.replace("+84",""),
             "Message": base64_encoded,
         }
         resp = requests.post(url, json=data, headers=headers)
