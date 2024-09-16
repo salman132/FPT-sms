@@ -2,7 +2,12 @@ from fastapi import FastAPI, status, Response
 from pydantic import BaseModel
 import time, json, requests, base64
 
+from fastapi import FastAPI, Form, status, Response
+from twilio.rest import Client
+import config
+
 app = FastAPI()
+settings = config.Settings()
 
 
 class DataModel(BaseModel):
@@ -61,7 +66,7 @@ def get_access_token() -> str:
     return access_token
 
 
-@app.post("/send/")
+@app.post("/vn/send/")
 async def handle_form(data: DataModel):
     try:
         bytes_string = data.body.encode("utf-8")
@@ -99,3 +104,25 @@ async def handle_form(data: DataModel):
             content={"error": str(e)},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+@app.post("/send/")
+async def handle_form(
+    phone: str = Form(...), body: str = Form(...), sender: str = Form(...)
+):
+    try:
+        client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+        client.region = "us1"
+        client.messages.create(to=phone, from_=settings.twilio_phone_number, body=body)
+        return {"msg": "Message sent successfully"}
+    except:
+        return Response(
+            content={"error": "Unable to send msg."},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@app.post("/validate/")
+async def validate(generated_otp: str, user_otp: str):
+    if generated_otp == user_otp:
+        return True
+    return False
