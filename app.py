@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status, Response
 from pydantic import BaseModel
 import time, json, requests, base64
+from services import log_message
 
 from fastapi import FastAPI, Form, status, Response
 from twilio.rest import Client
@@ -73,6 +74,8 @@ async def handle_form(data: DataModel):
         base64_encoded = base64.b64encode(bytes_string).decode("utf-8")
         url = "http://api01.sms.fpt.net/api/push-brandname-otp"
         access_token = get_access_token()
+        log_message('info', "access_token: {}".format(access_token))
+
 
         if (
             access_token == "No token data available"
@@ -95,8 +98,11 @@ async def handle_form(data: DataModel):
             "Message": base64_encoded,
         }
         print(data)
+        log_message("info", "data: {}".format(data))
         resp = requests.post(url, json=data, headers=headers)
         resp.raise_for_status()
+        log_message("info", "response status: {}".format(resp.raise_for_status))
+        log_message("info", "response: {}".format(resp.json))
         return resp.json()
     except Exception as e:
         print(f"Error handling form: {e}")
