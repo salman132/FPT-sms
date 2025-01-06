@@ -74,8 +74,8 @@ async def handle_form(data: DataModel):
         base64_encoded = base64.b64encode(bytes_string).decode("utf-8")
         url = "http://api01.sms.fpt.net/api/push-brandname-otp"
         access_token = get_access_token()
-        log_message('info', "access_token: {}".format(access_token))
 
+        log_message("info", f"Access token: {access_token}")
 
         if (
             access_token == "No token data available"
@@ -87,29 +87,38 @@ async def handle_form(data: DataModel):
                 media_type="application/json",
             )
 
-        headers = {
-            "Content-Type": "application/json",
-        }
-        data = {
+        headers = {"Content-Type": "application/json"}
+        data_payload = {
             "access_token": access_token,
             "session_id": "5c22be0c0396440829c98d7ba124092020145753419",
             "BrandName": "ARROWSTER",
-            "Phone": data.phone.replace("+84",""),
+            "Phone": data.phone.replace("+84", ""),
             "Message": base64_encoded,
         }
-        print(data)
-        log_message("info", "data: {}".format(data))
-        resp = requests.post(url, json=data, headers=headers)
+
+        log_message("info", f"Data payload: {json.dumps(data_payload, indent=4)}")
+
+        resp = requests.post(url, json=data_payload, headers=headers)
         resp.raise_for_status()
-        log_message("info", "response status: {}".format(resp.raise_for_status))
-        log_message("info", "response: {}".format(resp.json))
+
+        log_message("info", f"Response: {resp.json()}")
         return resp.json()
-    except Exception as e:
-        print(f"Error handling form: {e}")
+    except requests.RequestException as e:
+        error_message = e.response.text if e.response else str(e)
+        log_message("error", f"Request failed: {error_message}")
         return Response(
-            content={"error": str(e)},
+            content=json.dumps({"error": error_message}),
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            media_type="application/json",
         )
+    except Exception as e:
+        log_message("error", f"Unhandled exception: {str(e)}")
+        return Response(
+            content=json.dumps({"error": str(e)}),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            media_type="application/json",
+        )
+
 
 @app.post("/send/")
 async def handle_form(
